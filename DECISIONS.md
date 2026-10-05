@@ -2,9 +2,8 @@
 
 ## Primer paso de mañana
 
-1. **DEPLOY** (lo hace el dueño): crear el repo en GitHub y hacer push, importarlo en Vercel Hobby y poner `LLM_API_KEY` (clave gratuita de Gemini) **solo** en las variables de Vercel. En la URL en vivo, comprobar que una descripción clara muestra "Clasificación hecha por IA, puede equivocarse" y no el sello SIMULADO.
-2. Correr en la URL en vivo el plan de pruebas mecánico del packet (§12, pruebas 1 a 12) y anotar aquí lo que falle.
-3. Prueba de persona (Laura) con capturas → `docs/PERSONA_TEST.md`; arreglar la peor confusión.
+1. Correr en la URL en vivo el plan de pruebas mecánico del packet (§12, pruebas 1 a 12) y anotar aquí lo que falle.
+2. Prueba de persona (Laura) con capturas → `docs/PERSONA_TEST.md`; arreglar la peor confusión.
 
 ---
 
@@ -80,10 +79,21 @@ Después:
 - **Las tres etiquetas de honestidad están en pantalla:** "Clasificación hecha por IA, puede equivocarse" (fuente IA), el sello SIMULADO (respaldo) y "DEMO · datos inventados" en la cabecera y en cada ejemplo.
 - **Falsa alarma documentada:** con `curl` en Git Bash la ñ llega al servidor como U+FFFD y "contraseña" no se oculta. Con un cuerpo UTF-8 real sí se oculta. Para probar a mano en Windows, manda el cuerpo desde un archivo (`--data-binary @archivo.json`).
 
+### Deploy 1 · 2026-10-04
+
+- **URL:** https://primeras-24.vercel.app (Vercel Hobby, repo `NickosGit/primeras-24`). `LLM_API_KEY` está solo en las variables de Vercel.
+- **Comprobado en vivo con Gemini real** (`source: "ia"`):
+  - pantalla roja que pide bitcoins → `ransomware`, resumen "La computadora de recepción tiene una pantalla roja que pide bitcoins."
+  - "algo raro pasa con la compu" → `no_claro`, sin resumen (modo evidencia)
+  - "hol" → 400 en español
+  - "…mi contraseña es Gato2024!…" → `correo`, `redacted: true`; el resumen no trae la contraseña
+  - correos a pacientes pidiendo depósitos → `correo`
+  - DMARC de `sat.gob.mx` → `reject`; "not a domain" → 400
+- Los resúmenes de Gemini repiten solo lo que se escribió, sin causa, culpable ni consejos.
+
 ### Recortado / pendiente
 
-- **Deploy 1 y 2 a Vercel:** pendientes del dueño (cuenta de Vercel y clave de Gemini). Todo lo demás del commit 3 al 5 se probó en local.
-- **El sello IA en vivo** no se probó contra Gemini real: no hay clave en esta máquina. La ruta está probada con respuestas simuladas del modelo (válidas, inválidas, con violaciones de la cláusula sombra, con JSON roto y sin red).
+- **Deploy 2:** correr en la URL en vivo las 12 pruebas del packet (§12), incluidas las de pantalla (ticks, recarga, descarga, "Borrar todo").
 - **`docs/PERSONA_TEST.md`:** pendiente; es una sesión aparte con capturas.
 - **La tarjeta de correo no recuerda su resultado al recargar** (sí queda en la bitácora). Mejora pequeña para después.
 - **Corregir una decisión anotada:** no hay forma todavía; habría que agregar una nota, no editar.
