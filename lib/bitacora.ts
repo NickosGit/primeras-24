@@ -1,6 +1,7 @@
 import type { EstadoTipo } from "@/components/Estado";
 import { isIncidentType, type IncidentType } from "@/lib/classify";
 import { copy } from "@/data/copy";
+import { pasosDe, type Paso } from "@/data/protocols";
 
 // The incident log lives only in this browser (localStorage) and leaves only
 // when the user downloads it. Nothing here talks to a server.
@@ -204,8 +205,14 @@ export function exportTxt(
       : `${copy.ai.simulado}: ${copy.ai.simuladoExplica}`
     : "";
 
+  // Only steps still ticked, in the order they were done, read in first person.
   const vigentes = pasosHechos(entradas);
-  const hechos = seg.filter((e) => e.kind === "paso" && e.ref && vigentes.get(e.ref) === e.ts);
+  const pasos = caso ? pasosDe(caso.type) : [];
+  const hechos = [...vigentes.entries()]
+    .sort((a, b) => a[1] - b[1])
+    .map(([id]) => pasos.find((p) => p.id === id))
+    .filter((p): p is Paso => Boolean(p?.hecho));
+  const conFotos = hechos.some((p) => p.foto);
   const decisiones = seg.filter((e) => e.kind === "decision");
 
   const lineas = [
@@ -229,9 +236,17 @@ export function exportTxt(
     "PARA LEER AL 088",
     `1. Desde las ${hora(inicio)} tengo un posible incidente informático en mi negocio.`,
     `2. ${caso && caso.type !== "no_claro" ? `${tipo}. Nadie lo ha verificado todavía.` : "Todavía no sé qué tipo de incidente es."}`,
-    `3. Ya hice: ${hechos.length ? hechos.map((e) => e.text.replace(/^Hecho: /, "").replace(/\.$/, "")).join("; ") : "nada todavía"}.`,
+    `3. ${
+      hechos.length
+        ? hechos
+            .map((p, i) => (i === 0 ? p.hecho! : p.hecho!.charAt(0).toLowerCase() + p.hecho!.slice(1)))
+            .join("; ")
+        : "Todavía no he hecho ningún paso de la lista"
+    }.`,
     `4. Decisiones que ya tomó una persona: ${decisiones.length}. Pendientes: ${m.gatedAbiertos}.`,
-    "5. Tengo fotos y esta bitácora con horas para entregarlas.",
+    conFotos
+      ? "5. Tengo fotos y esta bitácora con horas para entregarlas."
+      : "5. Tengo esta bitácora con horas para entregarla.",
     "",
     copy.pie.linea1,
   ];

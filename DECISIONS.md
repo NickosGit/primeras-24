@@ -2,7 +2,9 @@
 
 ## Primer paso de mañana
 
-Commit 5: correr el plan de pruebas mecánico del packet sobre la URL en vivo, arreglar un bug real y anotarlo aquí con antes y después. **Antes:** DEPLOY 1 pendiente (necesita la cuenta de Vercel y la clave de Gemini del dueño).
+1. **DEPLOY** (lo hace el dueño): crear el repo en GitHub y hacer push, importarlo en Vercel Hobby y poner `LLM_API_KEY` (clave gratuita de Gemini) **solo** en las variables de Vercel. En la URL en vivo, comprobar que una descripción clara muestra "Clasificación hecha por IA, puede equivocarse" y no el sello SIMULADO.
+2. Correr en la URL en vivo el plan de pruebas mecánico del packet (§12, pruebas 1 a 12) y anotar aquí lo que falle.
+3. Prueba de persona (Laura) con capturas → `docs/PERSONA_TEST.md`; arreglar la peor confusión.
 
 ---
 
@@ -46,6 +48,42 @@ Commit 5: correr el plan de pruebas mecánico del packet sobre la URL en vivo, a
 - **"Borrar todo" pide confirmación** (es lo único irreversible de la app) y borra todas las claves `p24:*`.
 - **El archivo descargado lleva BOM UTF-8**, para que los acentos se vean bien en el Bloc de notas de Windows.
 
+### Commit 5: bug encontrado al probar
+
+**Bug: el resumen "PARA LEER AL 088" afirmaba cosas que la bitácora no respalda.** Se encontró al revisar el texto de una bitácora de ejemplo (prueba 10 del packet), con un paso de foto marcado y luego desmarcado.
+
+Antes:
+
+```
+3. Ya hice: Desconecta esa compu del internet: quita el cable o apaga su Wi-Fi. No la apagues.
+5. Tengo fotos y esta bitácora con horas para entregarlas.
+```
+
+- La línea 5 decía "Tengo fotos" **siempre**, aunque nadie hubiera marcado un paso de foto. Viola la Condición 1: convierte algo que no sabemos en una afirmación que la persona le lee a la autoridad.
+- La línea 3 pegaba el texto imperativo del paso ("Desconecta… No la apagues."). Leído en voz alta al 088 no tiene sentido.
+
+Después:
+
+```
+3. Desconecté la compu del internet sin apagarla.
+5. Tengo esta bitácora con horas para entregarla.
+```
+
+- Cada paso reversible tiene `hecho` (primera persona, pasado) y los pasos de foto llevan `foto: true`. La línea 3 usa solo los pasos que siguen marcados, en el orden en que se hicieron. La línea 5 menciona fotos solo si un paso de foto sigue marcado.
+- Pruebas de regresión en `tests/bitacora.test.tsx` ("088 summary"): fallan con el código anterior (comprobado con `git stash`) y pasan con el arreglo. `tests/protocols.test.ts` exige `hecho` en todo paso reversible, sin "tú", y que `foto` marque exactamente los pasos que hablan de foto.
+
+### Commit 5: otras revisiones
+
+- **Accesibilidad:** axe-core en la pantalla del plan con datos marcó contenido fuera de landmarks. El aviso "Nunca te vamos a pedir" pasó al `<header>` y "Hablar con una persona" al `<footer>`. Después: 0 violaciones en axe; Lighthouse móvil 100 en accesibilidad y 100 en buenas prácticas, en `/` y `/plan` (build de producción local).
+- **Revisión de "un solo dato":** la tarjeta de correo repetía la idea dos veces. La segunda línea ahora dice de dónde sale el dato.
+- **`git grep`** de claves (`AIza…`, `gsk_…`, `LLM_API_KEY=`): solo aparece el ejemplo `tu-clave` del README.
+- **Las tres etiquetas de honestidad están en pantalla:** "Clasificación hecha por IA, puede equivocarse" (fuente IA), el sello SIMULADO (respaldo) y "DEMO · datos inventados" en la cabecera y en cada ejemplo.
+- **Falsa alarma documentada:** con `curl` en Git Bash la ñ llega al servidor como U+FFFD y "contraseña" no se oculta. Con un cuerpo UTF-8 real sí se oculta. Para probar a mano en Windows, manda el cuerpo desde un archivo (`--data-binary @archivo.json`).
+
 ### Recortado / pendiente
 
-- Nada todavía.
+- **Deploy 1 y 2 a Vercel:** pendientes del dueño (cuenta de Vercel y clave de Gemini). Todo lo demás del commit 3 al 5 se probó en local.
+- **El sello IA en vivo** no se probó contra Gemini real: no hay clave en esta máquina. La ruta está probada con respuestas simuladas del modelo (válidas, inválidas, con violaciones de la cláusula sombra, con JSON roto y sin red).
+- **`docs/PERSONA_TEST.md`:** pendiente; es una sesión aparte con capturas.
+- **La tarjeta de correo no recuerda su resultado al recargar** (sí queda en la bitácora). Mejora pequeña para después.
+- **Corregir una decisión anotada:** no hay forma todavía; habría que agregar una nota, no editar.

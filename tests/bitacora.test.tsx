@@ -78,6 +78,41 @@ describe("metrics()", () => {
   });
 });
 
+describe("088 summary (bug found in commit 5)", () => {
+  const t0 = new Date("2026-10-04T08:41:00").getTime();
+  const caso: Caso = { ts: t0, type: "ransomware", source: "simulado", redacted: false };
+  const paso = (min: number, ref: string) =>
+    agregar({ ts: t0 + min * 60000, kind: "paso", estado: "SIN_VERIFICAR", text: `Hecho: ${ref}`, ref });
+
+  it("does not claim photos when the photo step was unticked", () => {
+    iniciar(caso);
+    paso(2, "ran-desconecta");
+    paso(4, "ran-foto");
+    agregar({ ts: t0 + 5 * 60000, kind: "nota", estado: "SIN_VERIFICAR", text: "Desmarcado", ref: "ran-foto" });
+    const txt = exportTxt(leer(), caso, gatedRansomware);
+    expect(txt).not.toMatch(/Tengo fotos/);
+    expect(txt).toMatch(/^5\. Tengo esta bitácora con horas para entregarla\.$/m);
+    expect(txt).toMatch(/^3\. Desconecté la compu del internet sin apagarla\.$/m);
+  });
+
+  it("claims photos only when a photo step is ticked, and reads steps in first person", () => {
+    iniciar(caso);
+    paso(2, "ran-desconecta");
+    paso(4, "ran-foto");
+    const txt = exportTxt(leer(), caso, gatedRansomware);
+    expect(txt).toMatch(/^5\. Tengo fotos y esta bitácora/m);
+    expect(txt).toMatch(/^3\. Desconecté la compu del internet sin apagarla; le tomé foto a la pantalla\.$/m);
+    expect(txt).not.toMatch(/^3\..*(Desconecta esa|No la apagues)/m);
+  });
+
+  it("says nothing was done yet when no step is ticked", () => {
+    iniciar(caso);
+    expect(exportTxt(leer(), caso, gatedRansomware)).toMatch(
+      /^3\. Todavía no he hecho ningún paso de la lista\.$/m,
+    );
+  });
+});
+
 describe("bitácora end to end", () => {
   it("three ticks and one decision survive a reload and appear in the download", async () => {
     const blobs = capturarDescarga();

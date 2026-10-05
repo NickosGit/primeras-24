@@ -25,9 +25,25 @@ describe("protocol integrity", () => {
     expect(sinUndo.map((p) => p.id)).toEqual([]);
   });
 
+  it.each(todos)("%s: every reversible step has a first-person line for the 088 summary", (_, pasos) => {
+    const mal = pasos.filter(
+      (p) =>
+        p.gate === "reversible" &&
+        (!p.hecho || p.hecho === p.text || /\b(tu|tus|te)\b|\.$/.test(p.hecho)),
+    );
+    expect(mal.map((p) => p.id)).toEqual([]);
+  });
+
+  it.each(todos)("%s: only steps that are about photos are flagged foto", (_, pasos) => {
+    const mal = pasos.filter((p) => Boolean(p.foto) !== /\bfoto\b/.test(p.text));
+    expect(mal.map((p) => p.id)).toEqual([]);
+  });
+
   it.each(todos)("%s: reversible steps pass the Shadow guard", (_, pasos) => {
     const mal = pasos.filter(
-      (p) => p.gate === "reversible" && (violatesShadow(p.text) || violatesShadow(p.undo ?? "")),
+      (p) =>
+        p.gate === "reversible" &&
+        (violatesShadow(p.text) || violatesShadow(p.undo ?? "") || violatesShadow(p.hecho ?? "")),
     );
     expect(mal.map((p) => p.id)).toEqual([]);
   });
