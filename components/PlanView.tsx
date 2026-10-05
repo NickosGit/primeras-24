@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { copy } from "@/data/copy";
 import { pasosDe } from "@/data/protocols";
@@ -10,15 +11,18 @@ import { AiLabel } from "@/components/AiLabel";
 import { Checklist } from "@/components/Checklist";
 import { GatedStep } from "@/components/GatedStep";
 import { EvidenceMode } from "@/components/EvidenceMode";
+import { DmarcCard } from "@/components/DmarcCard";
+import { BitacoraPanel } from "@/components/BitacoraPanel";
 
 export function PlanView() {
   const { hidratado, entradas, caso } = useBitacora();
+  const [borrado, setBorrado] = useState(false);
 
   if (!hidratado) return <p className="text-gris">{copy.acuse.leyendo}</p>;
 
   if (!caso) {
     return (
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <p className="text-lg">{copy.plan.sinCaso}</p>
         <Link
           href="/"
@@ -26,6 +30,13 @@ export function PlanView() {
         >
           {copy.plan.empezar}
         </Link>
+        <BitacoraPanel
+          entradas={entradas}
+          caso={null}
+          gatedIds={[]}
+          borrado={borrado}
+          onBorrar={() => setBorrado(true)}
+        />
       </div>
     );
   }
@@ -35,6 +46,8 @@ export function PlanView() {
   const decisiones = decisionesTomadas(entradas);
   const gated = pasos.filter((p) => p.gate === "requiere_humano");
   const claro = caso.type !== "no_claro";
+  // The email check is offered when the incident involves email or the bank (packet §10).
+  const ofrecerDmarc = caso.type === "correo" || caso.type === "banco";
 
   return (
     <div className="flex flex-col gap-5">
@@ -88,10 +101,20 @@ export function PlanView() {
               ))}
             </ul>
           </section>
+
+          {ofrecerDmarc && <DmarcCard />}
         </>
       ) : (
         <EvidenceMode hechos={hechos} />
       )}
+
+      <BitacoraPanel
+        entradas={entradas}
+        caso={caso}
+        gatedIds={gated.map((p) => p.id)}
+        borrado={borrado}
+        onBorrar={() => setBorrado(true)}
+      />
     </div>
   );
 }

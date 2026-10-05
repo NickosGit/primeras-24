@@ -2,7 +2,7 @@
 
 ## Primer paso de mañana
 
-Commit 4: `/api/dmarc`, `<DmarcCard />`, métricas, descarga de la bitácora y "Borrar todo". **Antes:** DEPLOY 1 pendiente (necesita la cuenta de Vercel y la clave de Gemini del dueño).
+Commit 5: correr el plan de pruebas mecánico del packet sobre la URL en vivo, arreglar un bug real y anotarlo aquí con antes y después. **Antes:** DEPLOY 1 pendiente (necesita la cuenta de Vercel y la clave de Gemini del dueño).
 
 ---
 
@@ -37,6 +37,14 @@ Commit 4: `/api/dmarc`, `<DmarcCard />`, métricas, descarga de la bitácora y "
 - **Las entradas de la bitácora llevan un `ref` opcional** (el id del paso). Desmarcar un paso no borra la entrada: agrega una `nota` con el mismo `ref`. La bitácora solo crece, como debe ser la evidencia.
 - **Una decisión anotada no se puede editar.** Si alguien se equivoca, lo correcto es una nota nueva (pendiente de diseño), no reescribir la evidencia.
 - **Se muestran todos los pasos de cada bloque de tiempo**, como en el mockup, y no "un paso a la vez" como dice la Condición 5 del packet. El mockup es más concreto; anotarlo para la prueba de persona.
+
+- **La revisión de correo se ofrece en los planes de correo y banco**, no en el de secuestro de archivos ni en modo evidencia. El packet (§5b y §10) dice "email incident" y "email takeover or bank fraud"; el mockup la muestra bajo ransomware. Ganó el texto del packet.
+- **El dominio se valida antes de cualquier consulta**: minúsculas, sin protocolo, sin ruta, sin "alguien@", al menos dos etiquetas y un TLD de letras. `http://x/../etc` queda como `x` y se rechaza por no tener TLD. Las IP también se rechazan.
+- **`no_se_pudo` se distingue de `sin_registro`**: NXDOMAIN (Status 3) significa que no hay registro, y eso es un hecho CONFIRMADO; un timeout o un SERVFAIL es DESCONOCIDO.
+- **La prueba con DNS real (`sat.gob.mx`, `banxico.org.mx`) corre solo con `RUN_LIVE=1`**, para que `npm test` funcione sin red. Corrida el 2026-10-04: sat.gob.mx → `p=reject`, banxico.org.mx → `p=none`, los dos con SPF.
+- **La bitácora exporta solo el caso actual** (desde el último "inicio"). Los casos anteriores siguen en el teléfono hasta "Borrar todo".
+- **"Borrar todo" pide confirmación** (es lo único irreversible de la app) y borra todas las claves `p24:*`.
+- **El archivo descargado lleva BOM UTF-8**, para que los acentos se vean bien en el Bloc de notas de Windows.
 
 ### Recortado / pendiente
 

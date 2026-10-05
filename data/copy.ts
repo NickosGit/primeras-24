@@ -184,7 +184,7 @@ export const copy = {
     spfNo: "No publica la lista de servidores que pueden mandar su correo (SPF).",
     unSoloDato:
       "Esto es un solo dato. No dice si tu negocio está bien o mal en lo demás.",
-    fuente: "Es un solo dato, de un registro público.",
+    fuente: "Fuente: el registro público del dominio (DNS), consultado ahora.",
     verRegistro: "Ver el registro tal cual",
     errorDominio: "Eso no parece un dominio. Escribe algo como clinica-ejemplo.mx",
   },
