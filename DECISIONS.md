@@ -2,8 +2,7 @@
 
 ## Primer paso de mañana
 
-1. Correr en la URL en vivo el plan de pruebas mecánico del packet (§12, pruebas 1 a 12) y anotar aquí lo que falle.
-2. Prueba de persona (Laura) con capturas → `docs/PERSONA_TEST.md`; arreglar la peor confusión.
+1. Prueba de persona (Laura) con capturas → `docs/PERSONA_TEST.md`; arreglar la peor confusión.
 
 ---
 
@@ -91,9 +90,29 @@ Después:
   - DMARC de `sat.gob.mx` → `reject`; "not a domain" → 400
 - Los resúmenes de Gemini repiten solo lo que se escribió, sin causa, culpable ni consejos.
 
+### Pruebas mecánicas en vivo · 2026-10-04
+
+En https://primeras-24.vercel.app, con el navegador a tamaño de teléfono (375×812) y Gemini real:
+
+| # | Prueba | Resultado |
+|---|---|---|
+| 1 | Pantalla roja que pide bitcoins | ✅ Ransomware, SIN VERIFICAR, etiqueta de IA; primer paso "Desconecta… No la apagues" con "Se deshace reconectando el cable o el Wi-Fi" |
+| 2 | Correos a pacientes pidiendo depósitos | ✅ Correo, tarjeta de revisión ofrecida |
+| 3 | "algo raro pasa con la compu" | ✅ Modo evidencia, DESCONOCIDO, sin protocolo, tarjeta de escalamiento |
+| 4 | "hol" | ✅ Rechazado en español, 0 llamadas a `/api/triage` |
+| 5 | "mi contraseña es Gato2024!" | ✅ Aviso de que se quitó y por qué; la contraseña no aparece en pantalla ni en localStorage |
+| 6 | Salida del modelo con violaciones | ⏭️ No se puede forzar en vivo; cubierta por `tests/triage.test.ts` (las 5 frases caen al respaldo) |
+| 7 | Completar un paso con candado | ✅ Sin casilla; "Guardar" sin rol muestra el error y no guarda nada |
+| 8 | Sin `LLM_API_KEY` | ⏭️ No se quitó la clave de producción; probado en local (sello SIMULADO) y en `tests/triage.test.ts` |
+| 9 | DMARC sat.gob.mx / banxico.org.mx / "not a domain" | ✅ `reject` y `none`, los dos CONFIRMADO, sin "protegido"; el tercero da 400 |
+| 10 | 3 pasos + 1 decisión, recargar, descargar | ✅ Todo sobrevive la recarga; el archivo trae horas, estados, "Minutos al primer paso: 0" y "Decisiones enviadas a humano: 1"; el resumen al 088 ya sale en primera persona (arreglo del commit 5) |
+| 11 | "Borrar todo" | ✅ localStorage vacío, descarga deshabilitada, mensaje "Borraste todo" |
+| 12 | Clave y `type="password"` | ✅ `git grep` limpio; los 10 archivos JS/HTML que descarga el navegador no traen la clave ni el endpoint de Gemini; 0 campos de contraseña |
+
+La descarga de la prueba 10 se interceptó dentro de la página para leer el archivo sin guardarlo en la computadora. El `confirm` de "Borrar todo" se aceptó desde código.
+
 ### Recortado / pendiente
 
-- **Deploy 2:** correr en la URL en vivo las 12 pruebas del packet (§12), incluidas las de pantalla (ticks, recarga, descarga, "Borrar todo").
 - **`docs/PERSONA_TEST.md`:** pendiente; es una sesión aparte con capturas.
 - **La tarjeta de correo no recuerda su resultado al recargar** (sí queda en la bitácora). Mejora pequeña para después.
 - **Corregir una decisión anotada:** no hay forma todavía; habría que agregar una nota, no editar.
